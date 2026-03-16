@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 
-interface SeatingWarning {
+export interface SeatingWarning {
   type: 'OVER_CAPACITY' | 'AVOID_CONFLICT' | 'SEPARATED_COUPLE' | 'SEPARATED_GROUP' | 'VIP_PLACEMENT' | 'RULE_VIOLATION';
   severity: 'error' | 'warning' | 'info';
   message: string;
@@ -131,10 +131,10 @@ export class SeatingService {
     }
 
     // Check AvoidTable relationships - guests who should not be at the same table
-    const avoidRelationships = relationships.filter(r => r.relationshipType === 'AvoidTable');
+    const avoidRelationships = relationships.filter((r: any) => r.relationshipType === 'AvoidTable');
     for (const rel of avoidRelationships) {
-      const guestTable = tables.find(t => t.seatingAssignments.some(a => a.guestId === rel.guestId));
-      const relatedTable = tables.find(t => t.seatingAssignments.some(a => a.guestId === rel.relatedGuestId));
+      const guestTable = tables.find((t: any) => t.seatingAssignments.some((a: any) => a.guestId === rel.guestId));
+      const relatedTable = tables.find((t: any) => t.seatingAssignments.some((a: any) => a.guestId === rel.relatedGuestId));
       if (guestTable && relatedTable && guestTable.id === relatedTable.id) {
         warnings.push({
           type: 'AVOID_CONFLICT',
@@ -148,10 +148,10 @@ export class SeatingService {
 
     // Check Spouse/Companion relationships - should be at the same table
     const keepTogetherTypes = ['Spouse', 'Companion', 'SameTable', 'KeepClose'];
-    const keepTogether = relationships.filter(r => keepTogetherTypes.includes(r.relationshipType));
+    const keepTogether = relationships.filter((r: any) => keepTogetherTypes.includes(r.relationshipType));
     for (const rel of keepTogether) {
-      const guestTable = tables.find(t => t.seatingAssignments.some(a => a.guestId === rel.guestId));
-      const relatedTable = tables.find(t => t.seatingAssignments.some(a => a.guestId === rel.relatedGuestId));
+      const guestTable = tables.find((t: any) => t.seatingAssignments.some((a: any) => a.guestId === rel.guestId));
+      const relatedTable = tables.find((t: any) => t.seatingAssignments.some((a: any) => a.guestId === rel.relatedGuestId));
       if (guestTable && relatedTable && guestTable.id !== relatedTable.id) {
         const severity = (rel.relationshipType === 'Spouse' || rel.relationshipType === 'Companion') ? 'warning' : 'info';
         warnings.push({
@@ -164,11 +164,11 @@ export class SeatingService {
     }
 
     // Check avoidWith field on guests
-    const allAssignedGuests = tables.flatMap(t => t.seatingAssignments.map(a => ({ ...a.guest, tableId: t.id, tableName: t.tableName })));
+    const allAssignedGuests = tables.flatMap((t: any) => t.seatingAssignments.map((a: any) => ({ ...a.guest, tableId: t.id, tableName: t.tableName })));
     for (const guest of allAssignedGuests) {
       if (guest.avoidWith) {
         const avoidNames = guest.avoidWith.split(',').map((n: string) => n.trim().toLowerCase());
-        const sameTableGuests = allAssignedGuests.filter(g => g.tableId === guest.tableId && g.id !== guest.id);
+        const sameTableGuests = allAssignedGuests.filter((g: any) => g.tableId === guest.tableId && g.id !== guest.id);
         for (const tablemate of sameTableGuests) {
           if (avoidNames.some((name: string) => tablemate.convidado.toLowerCase().includes(name))) {
             warnings.push({
@@ -189,7 +189,7 @@ export class SeatingService {
       if (rule.ruleType === 'MAX_VIP_PER_TABLE' && config.maxVip) {
         for (const table of tables) {
           const vipCount = table.seatingAssignments.filter(
-            a => a.guest.vipLevel === 'VIP' || a.guest.vipLevel === 'VVIP'
+            (a: any) => a.guest.vipLevel === 'VIP' || a.guest.vipLevel === 'VVIP'
           ).length;
           if (vipCount > config.maxVip) {
             warnings.push({

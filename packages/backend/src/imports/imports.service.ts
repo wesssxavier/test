@@ -101,8 +101,8 @@ export class ImportsService {
       select: { id: true, convidado: true, email: true, telephone: true },
     });
 
-    const nameIndex = new Map(existingGuests.map(g => [g.convidado.toLowerCase().trim(), g.id]));
-    const emailIndex = new Map(existingGuests.filter(g => g.email).map(g => [g.email!.toLowerCase().trim(), g.id]));
+    const nameIndex = new Map(existingGuests.map((g: any) => [g.convidado.toLowerCase().trim(), g.id]));
+    const emailIndex = new Map(existingGuests.filter((g: any) => g.email).map((g: any) => [g.email!.toLowerCase().trim(), g.id]));
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
@@ -112,7 +112,7 @@ export class ImportsService {
       if (mappedRow.email) {
         const existingId = emailIndex.get(mappedRow.email.toLowerCase().trim());
         if (existingId) {
-          duplicates.push({ rowIndex: i, existingGuestId: existingId, matchField: 'email', matchValue: mappedRow.email });
+          duplicates.push({ rowIndex: i, existingGuestId: existingId as string, matchField: 'email', matchValue: mappedRow.email });
           continue;
         }
       }
@@ -121,7 +121,7 @@ export class ImportsService {
       if (mappedRow.convidado) {
         const existingId = nameIndex.get(mappedRow.convidado.toLowerCase().trim());
         if (existingId) {
-          duplicates.push({ rowIndex: i, existingGuestId: existingId, matchField: 'convidado', matchValue: mappedRow.convidado });
+          duplicates.push({ rowIndex: i, existingGuestId: existingId as string, matchField: 'convidado', matchValue: mappedRow.convidado });
         }
       }
     }

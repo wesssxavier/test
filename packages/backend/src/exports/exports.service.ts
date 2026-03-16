@@ -31,7 +31,7 @@ export class ExportsService {
 
     const columns = options?.columns || defaultColumns;
 
-    const rows = guests.map(guest => {
+    const rows = guests.map((guest: any) => {
       const row: Record<string, any> = {};
 
       for (const col of columns) {
@@ -82,7 +82,7 @@ export class ExportsService {
 
     // Auto-size columns
     const colWidths = Object.keys(rows[0] || {}).map(key => ({
-      wch: Math.max(key.length, ...rows.map(r => String(r[key] || '').length).slice(0, 100)) + 2,
+      wch: Math.max(key.length, ...rows.map((r: any) => String(r[key] || '').length).slice(0, 100)) + 2,
     }));
     worksheet['!cols'] = colWidths;
 
@@ -91,14 +91,14 @@ export class ExportsService {
     // Add summary sheet
     const summaryData = [
       { Metric: 'Total Guests', Value: guests.length },
-      { Metric: 'Confirmed', Value: guests.filter(g => g.rsvpStatus === 'Confirmed').length },
-      { Metric: 'Pending', Value: guests.filter(g => g.rsvpStatus === 'Pending').length },
-      { Metric: 'Declined', Value: guests.filter(g => g.rsvpStatus === 'Declined').length },
-      { Metric: 'Checked In', Value: guests.filter(g => g.checkedIn).length },
-      { Metric: 'VIP', Value: guests.filter(g => g.vipLevel === 'VIP').length },
-      { Metric: 'VVIP', Value: guests.filter(g => g.vipLevel === 'VVIP').length },
-      { Metric: 'Seated', Value: guests.filter(g => g.seatingAssignment).length },
-      { Metric: 'Unseated', Value: guests.filter(g => !g.seatingAssignment).length },
+      { Metric: 'Confirmed', Value: guests.filter((g: any) => g.rsvpStatus === 'Confirmed').length },
+      { Metric: 'Pending', Value: guests.filter((g: any) => g.rsvpStatus === 'Pending').length },
+      { Metric: 'Declined', Value: guests.filter((g: any) => g.rsvpStatus === 'Declined').length },
+      { Metric: 'Checked In', Value: guests.filter((g: any) => g.checkedIn).length },
+      { Metric: 'VIP', Value: guests.filter((g: any) => g.vipLevel === 'VIP').length },
+      { Metric: 'VVIP', Value: guests.filter((g: any) => g.vipLevel === 'VVIP').length },
+      { Metric: 'Seated', Value: guests.filter((g: any) => g.seatingAssignment).length },
+      { Metric: 'Unseated', Value: guests.filter((g: any) => !g.seatingAssignment).length },
     ];
     const summarySheet = XLSX.utils.json_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');

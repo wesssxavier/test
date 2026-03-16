@@ -49,9 +49,9 @@ export class DashboardService {
     return {
       overview: {
         totalGuests,
-        confirmed: guestsByRsvp.find(r => r.rsvpStatus === 'Confirmed')?._count || 0,
-        pending: guestsByRsvp.find(r => r.rsvpStatus === 'Pending')?._count || 0,
-        declined: guestsByRsvp.find(r => r.rsvpStatus === 'Declined')?._count || 0,
+        confirmed: guestsByRsvp.find((r: any) => r.rsvpStatus === 'Confirmed')?._count || 0,
+        pending: guestsByRsvp.find((r: any) => r.rsvpStatus === 'Pending')?._count || 0,
+        declined: guestsByRsvp.find((r: any) => r.rsvpStatus === 'Declined')?._count || 0,
         checkedIn: checkedInCount,
         seated: seatedCount,
         unseated: totalGuests - seatedCount,
@@ -60,11 +60,11 @@ export class DashboardService {
         availableSeats: totalCapacity - seatedCount,
       },
       breakdowns: {
-        byStatus: guestsByStatus.map(g => ({ status: g.status, count: g._count })),
-        byRsvp: guestsByRsvp.map(g => ({ rsvpStatus: g.rsvpStatus, count: g._count })),
-        byVipLevel: guestsByVip.map(g => ({ vipLevel: g.vipLevel, count: g._count })),
-        byGuestType: guestsByType.map(g => ({ guestType: g.guestType, count: g._count })),
-        byCompany: guestsByCompany.map(g => ({ empresa: g.empresa, count: g._count })),
+        byStatus: guestsByStatus.map((g: any) => ({ status: g.status, count: g._count })),
+        byRsvp: guestsByRsvp.map((g: any) => ({ rsvpStatus: g.rsvpStatus, count: g._count })),
+        byVipLevel: guestsByVip.map((g: any) => ({ vipLevel: g.vipLevel, count: g._count })),
+        byGuestType: guestsByType.map((g: any) => ({ guestType: g.guestType, count: g._count })),
+        byCompany: guestsByCompany.map((g: any) => ({ empresa: g.empresa, count: g._count })),
       },
       recentActivity,
     };

@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class GuestsService {
@@ -27,7 +26,7 @@ export class GuestsService {
     page?: number;
     pageSize?: number;
   }) {
-    const where: Prisma.GuestWhereInput = { eventId };
+    const where: any = { eventId };
 
     if (query?.search) {
       where.OR = [
