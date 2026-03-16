@@ -1,0 +1,475 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  username    String   @unique
+  password    String
+  displayName String   @map("display_name")
+  email       String   @unique
+  role        UserRole @default(EDITOR)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  eventPermissions UserEventPermission[]
+  createdEvents    Event[]               @relation("EventCreator")
+  auditLogs        AuditLog[]
+  savedViews       SavedView[]
+  importJobs       ImportJob[]
+  checkInLogs      CheckInLog[]
+  sessions         Session[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEW_ONLY
+  CHECK_IN_ONLY
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+model UserEventPermission {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  eventId   String   @map("event_id")
+  role      UserRole
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+  @@map("user_event_permissions")
+}
+
+model Event {
+  id                  String     @id @default(uuid())
+  eventName           String     @map("event_name")
+  eventDate           DateTime   @map("event_date")
+  eventLocation       String     @map("event_location")
+  roomName            String?    @map("room_name")
+  notes               String?
+  roomWidth           Int        @default(1200) @map("room_width")
+  roomHeight          Int        @default(800) @map("room_height")
+  defaultTableShape   TableShape @default(ROUND) @map("default_table_shape")
+  defaultTableCapacity Int       @default(10) @map("default_table_capacity")
+  createdBy           String     @map("created_by")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
+
+  creator             User                  @relation("EventCreator", fields: [createdBy], references: [id])
+  guests              Guest[]
+  roomTables          RoomTable[]
+  roomElements        RoomElement[]
+  seatingAssignments  SeatingAssignment[]
+  guestRelationships  GuestRelationship[]
+  customFields        CustomField[]
+  savedViews          SavedView[]
+  importJobs          ImportJob[]
+  checkInLogs         CheckInLog[]
+  auditLogs           AuditLog[]
+  userPermissions     UserEventPermission[]
+  rules               Rule[]
+
+  @@index([eventDate])
+  @@index([createdBy])
+  @@map("events")
+}
+
+enum TableShape {
+  ROUND
+  SQUARE
+  RECTANGLE
+}
+
+model Guest {
+  id                   String      @id @default(uuid())
+  eventId              String      @map("event_id")
+  convidado            String
+  empresa              String?
+  telephone            String?
+  email                String?
+  guestType            GuestType   @default(Guest) @map("guest_type")
+  status               GuestStatus @default(Invited)
+  rsvpStatus           RsvpStatus  @default(Pending) @map("rsvp_status")
+  vipLevel             VipLevel    @default(None) @map("vip_level")
+  dietaryRestrictions  String?     @map("dietary_restrictions")
+  notes                String?
+  linkedGroupName      String?     @map("linked_group_name")
+  linkedPrimaryGuestId String?     @map("linked_primary_guest_id")
+  seatPreference       String?     @map("seat_preference")
+  avoidWith            String?     @map("avoid_with")
+  checkedIn            Boolean     @default(false) @map("checked_in")
+  checkedInAt          DateTime?   @map("checked_in_at")
+  importedFileName     String?     @map("imported_file_name")
+  importedRowNumber    Int?        @map("imported_row_number")
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
+
+  event               Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  linkedPrimaryGuest  Guest?             @relation("LinkedGuests", fields: [linkedPrimaryGuestId], references: [id])
+  linkedGuests        Guest[]            @relation("LinkedGuests")
+  seatingAssignment   SeatingAssignment?
+  relationshipsFrom   GuestRelationship[] @relation("RelationshipFrom")
+  relationshipsTo     GuestRelationship[] @relation("RelationshipTo")
+  customFieldValues   CustomFieldValue[]
+  checkInLogs         CheckInLog[]
+
+  @@index([eventId])
+  @@index([eventId, convidado])
+  @@index([eventId, email])
+  @@index([eventId, status])
+  @@index([eventId, rsvpStatus])
+  @@index([linkedPrimaryGuestId])
+  @@map("guests")
+}
+
+enum GuestType {
+  Guest
+  Spouse
+  Officer
+  Other
+}
+
+enum GuestStatus {
+  Invited
+  Confirmed
+  Declined
+  Waitlist
+  No_Response @map("No Response")
+  Checked_In  @map("Checked-In")
+}
+
+enum RsvpStatus {
+  Pending
+  Confirmed
+  Declined
+}
+
+enum VipLevel {
+  None
+  VIP
+  VVIP
+}
+
+model GuestRelationship {
+  id               String           @id @default(uuid())
+  eventId          String           @map("event_id")
+  guestId          String           @map("guest_id")
+  relatedGuestId   String           @map("related_guest_id")
+  relationshipType RelationshipType @map("relationship_type")
+  notes            String?
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  event        Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest        Guest @relation("RelationshipFrom", fields: [guestId], references: [id], onDelete: Cascade)
+  relatedGuest Guest @relation("RelationshipTo", fields: [relatedGuestId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, guestId, relatedGuestId, relationshipType])
+  @@index([eventId])
+  @@index([guestId])
+  @@index([relatedGuestId])
+  @@map("guest_relationships")
+}
+
+enum RelationshipType {
+  Spouse
+  Companion
+  Officer
+  Family
+  SameTable
+  KeepClose
+  AvoidTable
+}
+
+model RoomTable {
+  id           String     @id @default(uuid())
+  eventId      String     @map("event_id")
+  tableName    String     @map("table_name")
+  shape        TableShape @default(ROUND)
+  capacity     Int        @default(10)
+  xPosition    Float      @default(0) @map("x_position")
+  yPosition    Float      @default(0) @map("y_position")
+  width        Float      @default(120)
+  height       Float      @default(120)
+  rotation     Float      @default(0)
+  visualStatus String?    @map("visual_status")
+  notes        String?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  event              Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  seatingAssignments SeatingAssignment[]
+
+  @@index([eventId])
+  @@map("room_tables")
+}
+
+model RoomElement {
+  id          String  @id @default(uuid())
+  eventId     String  @map("event_id")
+  elementType String  @map("element_type")
+  label       String
+  xPosition   Float   @default(0) @map("x_position")
+  yPosition   Float   @default(0) @map("y_position")
+  width       Float   @default(100)
+  height      Float   @default(100)
+  rotation    Float   @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@map("room_elements")
+}
+
+model SeatingAssignment {
+  id              String   @id @default(uuid())
+  eventId         String   @map("event_id")
+  guestId         String   @unique @map("guest_id")
+  tableId         String   @map("table_id")
+  seatNumber      Int?     @map("seat_number")
+  assignmentNotes String?  @map("assignment_notes")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  event Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  table RoomTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, guestId])
+  @@index([eventId])
+  @@index([tableId])
+  @@map("seating_assignments")
+}
+
+model CustomField {
+  id           String          @id @default(uuid())
+  eventId      String?         @map("event_id")
+  fieldName    String          @map("field_name")
+  fieldType    CustomFieldType @map("field_type")
+  options      Json?
+  isFilterable Boolean         @default(true) @map("is_filterable")
+  isImportable Boolean         @default(true) @map("is_importable")
+  isExportable Boolean         @default(true) @map("is_exportable")
+  showInGrid   Boolean         @default(false) @map("show_in_grid")
+  sortOrder    Int             @default(0) @map("sort_order")
+  isHidden     Boolean         @default(false) @map("is_hidden")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  event  Event?            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  values CustomFieldValue[]
+
+  @@index([eventId])
+  @@map("custom_fields")
+}
+
+enum CustomFieldType {
+  TEXT
+  TEXTAREA
+  SELECT
+  MULTI_SELECT
+  NUMBER
+  DATE
+  CHECKBOX
+  EMAIL
+  PHONE
+}
+
+model CustomFieldValue {
+  id      String @id @default(uuid())
+  guestId String @map("guest_id")
+  fieldId String @map("field_id")
+  value   String
+
+  guest Guest       @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  field CustomField  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([guestId, fieldId])
+  @@index([fieldId])
+  @@map("custom_field_values")
+}
+
+model SavedView {
+  id        String   @id @default(uuid())
+  eventId   String?  @map("event_id")
+  viewName  String   @map("view_name")
+  isDefault Boolean  @default(false) @map("is_default")
+  config    Json
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  event Event? @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User   @relation(fields: [createdBy], references: [id])
+
+  @@index([eventId])
+  @@map("saved_views")
+}
+
+model Rule {
+  id          String   @id @default(uuid())
+  eventId     String   @map("event_id")
+  ruleType    String   @map("rule_type")
+  config      Json
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@map("rules")
+}
+
+model ImportJob {
+  id                String       @id @default(uuid())
+  eventId           String       @map("event_id")
+  fileName          String       @map("file_name")
+  fileSize          Int          @map("file_size")
+  totalRows         Int          @default(0) @map("total_rows")
+  importedRows      Int          @default(0) @map("imported_rows")
+  skippedRows       Int          @default(0) @map("skipped_rows")
+  errorRows         Int          @default(0) @map("error_rows")
+  status            ImportStatus @default(PENDING)
+  columnMapping     Json         @map("column_mapping")
+  mappingTemplateId String?      @map("mapping_template_id")
+  importedBy        String       @map("imported_by")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  completedAt       DateTime?    @map("completed_at")
+
+  event Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User        @relation(fields: [importedBy], references: [id])
+  rows  ImportRow[]
+
+  @@index([eventId])
+  @@map("import_jobs")
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  PARTIAL
+}
+
+model ImportRow {
+  id              String          @id @default(uuid())
+  importJobId     String          @map("import_job_id")
+  rowNumber       Int             @map("row_number")
+  rawData         Json            @map("raw_data")
+  mappedData      Json            @map("mapped_data")
+  status          ImportRowStatus @default(VALID)
+  errorMessage    String?         @map("error_message")
+  duplicateGuestId String?        @map("duplicate_guest_id")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  importJob ImportJob @relation(fields: [importJobId], references: [id], onDelete: Cascade)
+
+  @@index([importJobId])
+  @@map("import_rows")
+}
+
+enum ImportRowStatus {
+  VALID
+  DUPLICATE
+  ERROR
+  SKIPPED
+  IMPORTED
+  NEEDS_REVIEW
+}
+
+model CheckInLog {
+  id          String   @id @default(uuid())
+  eventId     String   @map("event_id")
+  guestId     String   @map("guest_id")
+  action      String
+  notes       String?
+  performedBy String   @map("performed_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [performedBy], references: [id])
+
+  @@index([eventId])
+  @@index([guestId])
+  @@map("check_in_logs")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  eventId    String?  @map("event_id")
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  action     String
+  summary    String
+  details    Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user  User   @relation(fields: [userId], references: [id])
+  event Event? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model MappingTemplate {
+  id           String   @id @default(uuid())
+  templateName String   @map("template_name")
+  mappings     Json
+  createdBy    String   @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("mapping_templates")
+}
+
+model AppSetting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value Json
+
+  @@map("app_settings")
+}
+
+model BackupMetadata {
+  id          String   @id @default(uuid())
+  fileName    String   @map("file_name")
+  fileSize    Int      @map("file_size")
+  backupType  String   @map("backup_type")
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  notes       String?
+
+  @@map("backups_metadata")
+}

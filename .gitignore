@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# Prisma
+packages/backend/prisma/migrations/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tauri
+packages/desktop/src-tauri/target/
+
+# Uploads
+uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Generated
+packages/backend/dist/
+packages/shared/dist/

@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: guestflow-db
+    environment:
+      POSTGRES_USER: guestflow
+      POSTGRES_PASSWORD: guestflow
+      POSTGRES_DB: guestflow
+    ports:
+      - '5432:5432'
+    volumes:
+      - guestflow_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  guestflow_data:

@@ -1,0 +1,21 @@
+{
+  "name": "guestflow-private",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GuestFlow Private - Self-hosted event management and seating planner",
+  "workspaces": [
+    "packages/shared",
+    "packages/backend",
+    "packages/desktop"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=packages/backend",
+    "dev:desktop": "npm run dev --workspace=packages/desktop",
+    "build:shared": "npm run build --workspace=packages/shared",
+    "build:backend": "npm run build --workspace=packages/backend",
+    "build:desktop": "npm run build --workspace=packages/desktop",
+    "db:migrate": "npm run db:migrate --workspace=packages/backend",
+    "db:seed": "npm run db:seed --workspace=packages/backend",
+    "db:generate": "npm run db:generate --workspace=packages/backend"
+  }
+}
