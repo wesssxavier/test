@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
-import { SeatingService } from './seating.service';
+import { SeatingService, SeatingWarning } from './seating.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
@@ -60,7 +60,7 @@ export class SeatingController {
   }
 
   @Get('warnings')
-  async getWarnings(@Param('eventId') eventId: string) {
+  async getWarnings(@Param('eventId') eventId: string): Promise<{ data: SeatingWarning[] }> {
     const warnings = await this.seatingService.getWarnings(eventId);
     return { data: warnings };
   }

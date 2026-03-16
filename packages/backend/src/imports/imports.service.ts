@@ -238,13 +238,15 @@ export class ImportsService {
         }
 
         // Create new guest
-        const guest = await this.prisma.guest.create({
-          data: {
+        const guestData: any = {
             eventId,
+            convidado: mappedData.convidado,
             ...this.sanitizeGuestData(mappedData),
             importedFileName: fileName,
             importedRowNumber: i + 1,
-          },
+        };
+        const guest = await this.prisma.guest.create({
+          data: guestData,
         });
 
         // Handle custom field values
