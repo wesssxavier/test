@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Prize Awaits | 2025 Private Banking Campaign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500;1,600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1a2a5e;
+  --navy-dark: #0e1a3c;
+  --navy-light: #2a3d75;
+  --cream: #faf7ee;
+  --cream-dark: #efe8d2;
+  --gold: #c9a961;
+  --gold-light: #e2c78a;
+  --text: #3a3a3a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { min-height: 100vh; width: 100%; }
+body {
+  background: radial-gradient(ellipse at top, #f5efde 0%, #e6dcc0 100%);
+  font-family: 'Montserrat', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(26,42,94,0.05) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(201,169,97,0.07) 0%, transparent 45%);
+  pointer-events: none;
+  z-index: 0;
+}
+.stage {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1800px;
+  z-index: 1;
+}
+
+/* Claim Button */
+.claim-btn {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--navy);
+  color: var(--cream);
+  border: 1px solid var(--navy);
+  padding: 24px 72px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.45rem;
+  letter-spacing: 4px;
+  cursor: pointer;
+  transition: all 0.45s cubic-bezier(.22,.61,.36,1);
+  text-transform: uppercase;
+  box-shadow:
+    0 18px 45px -12px rgba(26,42,94,0.5),
+    0 0 0 1px rgba(250,247,240,0.08) inset;
+  z-index: 10;
+  font-weight: 500;
+}
+.claim-btn::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(250,247,240,0.3);
+  pointer-events: none;
+  transition: inset 0.4s ease;
+}
+.claim-btn:hover {
+  background: var(--navy-dark);
+  transform: translate(-50%, -52%);
+  box-shadow: 0 25px 60px -10px rgba(26,42,94,0.6);
+}
+.claim-btn:hover::before { inset: 9px; }
+.claim-btn.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.92);
+}
+
+/* Envelope wrap */
+.envelope-wrap {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 500px;
+  height: 340px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -45%) scale(0.85);
+  transition: opacity 0.9s ease, transform 0.9s cubic-bezier(.22,.61,.36,1);
+  transform-style: preserve-3d;
+  z-index: 5;
+}
+.envelope-wrap.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+.envelope {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+/* Envelope back */
+.env-back {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, var(--navy-light) 0%, var(--navy) 45%, var(--navy-dark) 100%);
+  border-radius: 6px;
+  box-shadow:
+    0 45px 80px -25px rgba(0,0,0,0.45),
+    0 25px 50px -20px rgba(26,42,94,0.5);
+  z-index: 1;
+  transition: opacity 0.8s ease 0.9s;
+}
+.env-back::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(250,247,240,0.12);
+  border-radius: 3px;
+}
+.envelope-wrap.open .env-back { opacity: 0; }
+
+/* Letter */
+.letter {
+  position: absolute;
+  width: 92%;
+  height: 94%;
+  left: 4%;
+  top: 3%;
+  background: linear-gradient(180deg, var(--cream) 0%, var(--cream-dark) 100%);
+  border-radius: 3px;
+  box-shadow:
+    0 0 0 1px rgba(26,42,94,0.12),
+    0 12px 34px rgba(0,0,0,0.18);
+  z-index: 2;
+  transform: translate(0, 0) scale(1);
+  transition: transform 1.25s cubic-bezier(.22,.61,.36,1) 0.5s;
+  padding: 12px;
+  overflow: hidden;
+}
+.envelope-wrap.open .letter {
+  transform: translate(0, -70px) scale(1.4);
+}
+
+.letter-inner {
+  width: 100%;
+  height: 100%;
+  padding: 14px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1px solid rgba(26,42,94,0.22);
+  opacity: 0;
+  transition: opacity 0.6s ease 1.0s;
+}
+.envelope-wrap.open .letter-inner { opacity: 1; }
+
+.logo {
+  width: 64px;
+  height: auto;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+}
+.letter h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  color: var(--navy);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.divider {
+  width: 48px;
+  height: 1px;
+  background: var(--navy);
+  opacity: 0.45;
+  margin: 4px auto 8px;
+  position: relative;
+}
+.divider::before, .divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 3px; border-radius: 50%;
+  background: var(--navy);
+}
+.divider::before { left: -8px; }
+.divider::after { right: -8px; }
+
+.letter p {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.6rem;
+  line-height: 1.65;
+  color: var(--text);
+  font-weight: 400;
+  max-width: 400px;
+  margin-bottom: 5px;
+}
+.letter p strong { color: var(--navy); font-weight: 600; }
+
+.contact-block {
+  margin-top: 5px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(26,42,94,0.18);
+  width: 70%;
+}
+.contact-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.85rem;
+  color: var(--navy);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.contact-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.48rem;
+  color: var(--navy);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.contact-details {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.55rem;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+/* Pocket (envelope front with V-notch at top) */
+.pocket {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+  clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%);
+  z-index: 3;
+  border-radius: 6px;
+  transition: opacity 0.8s ease 0.9s;
+}
+.pocket::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 45%);
+  clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%);
+}
+.pocket::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(250,247,240,0.13);
+  clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%);
+  pointer-events: none;
+}
+.envelope-wrap.open .pocket { opacity: 0; }
+
+/* Flap */
+.flap {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  top: 0;
+  left: 0;
+  background: linear-gradient(135deg, var(--navy-light) 0%, var(--navy) 55%, var(--navy-dark) 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transform: rotateX(0);
+  transition: transform 0.95s cubic-bezier(.5,-0.05,.5,1.05) 0s, opacity 0.8s ease 0.9s;
+  z-index: 4;
+  backface-visibility: visible;
+}
+.flap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.25) 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.envelope-wrap.open .flap {
+  transform: rotateX(-180deg);
+  opacity: 0;
+}
+
+/* Seal */
+.seal {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 35% 35%, var(--gold-light) 0%, var(--gold) 55%, #7e6028 100%);
+  border-radius: 50%;
+  z-index: 6;
+  box-shadow:
+    0 4px 14px rgba(0,0,0,0.4),
+    0 0 0 2px rgba(201,169,97,0.5),
+    inset 0 -2px 5px rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--navy-dark);
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-style: italic;
+  transition: opacity 0.3s ease, transform 0.45s ease;
+  pointer-events: none;
+}
+.envelope-wrap.open .seal {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(1.6);
+}
+
+/* Subtle float after animation completes */
+@keyframes gentle-float {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%      { transform: translate(-50%, -52%) scale(1); }
+}
+.envelope-wrap.visible.open {
+  animation: gentle-float 5s ease-in-out infinite 3.2s;
+}
+
+@media (max-width: 600px) {
+  .envelope-wrap { width: 90vw; height: 61vw; }
+  .claim-btn { font-size: 1.1rem; padding: 18px 48px; letter-spacing: 3px; }
+  .letter h1 { font-size: 0.95rem; }
+  .letter p { font-size: 0.52rem; }
+  .contact-name { font-size: 0.72rem; }
+}
+</style>
+</head>
+<body>
+<div class="stage">
+  <button class="claim-btn" id="claimBtn">Claim Your Prize</button>
+  <div class="envelope-wrap" id="envWrap">
+    <div class="envelope">
+      <div class="env-back"></div>
+      <div class="letter">
+        <div class="letter-inner">
+          <svg class="logo" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" aria-label="Company Logo">
+            <g stroke="#1a2a5e" fill="none" stroke-linejoin="round" stroke-linecap="round">
+              <path stroke-width="4" d="M20 25 L180 25 L180 140 Q180 198 100 226 Q20 198 20 140 Z"/>
+              <path stroke-width="1.5" d="M30 38 L170 38 L170 136 Q170 188 100 212 Q30 188 30 136 Z"/>
+              <path stroke-width="1.2" d="M55 52 Q100 40 145 52"/>
+              <path stroke-width="1.2" d="M50 64 Q100 52 150 64"/>
+              <path stroke-width="1.2" d="M40 110 Q30 140 45 165"/>
+              <path stroke-width="1.2" d="M160 110 Q170 140 155 165"/>
+              <path stroke-width="1.2" d="M55 180 Q100 190 145 180"/>
+              <path stroke-width="1.2" d="M62 192 Q100 198 138 192"/>
+            </g>
+            <text x="100" y="152" font-family="Cormorant Garamond, Didot, Georgia, serif" font-size="100" font-weight="700" font-style="italic" fill="#1a2a5e" text-anchor="middle">JB</text>
+          </svg>
+          <h1>Congratulations</h1>
+          <div class="divider"></div>
+          <p>Congratulations on winning the <strong>2025 Private Banking Campaign</strong>. You have been awarded a <strong>$4,000 prize</strong> to book a trip of your choice by <strong>August 31, 2026</strong>, for you and a guest.</p>
+          <p>To book your trip, please contact:</p>
+          <div class="contact-block">
+            <div class="contact-name">Zorina Rosales</div>
+            <div class="contact-title">Vice President</div>
+            <div class="contact-details">
+              +1 305 932 5560 ext. 136<br>
+              foresttravel.com
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pocket"></div>
+      <div class="flap"></div>
+      <div class="seal">JB</div>
+    </div>
+  </div>
+</div>
+<script>
+  const btn = document.getElementById('claimBtn');
+  const env = document.getElementById('envWrap');
+  btn.addEventListener('click', () => {
+    btn.classList.add('hidden');
+    setTimeout(() => env.classList.add('visible'), 420);
+    setTimeout(() => env.classList.add('open'), 1420);
+  });
+</script>
+</body>
+</html>
